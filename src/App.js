@@ -8,8 +8,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/workflows" element={<WorkFlow />} />
-        <Route path="/modules" element={<DesignWorkFlow />} />
+        <Route path="/" element={<WorkFlow />} />
+        <Route path="/workflows/modules" element={<DesignWorkFlow />} />
       </Routes>
     </BrowserRouter>
   );

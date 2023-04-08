@@ -32,7 +32,7 @@ const WorkFlow = () => {
             {workflows.map((workflow) => (
               <tr key={workflow.id}>
                 <td>
-                  <Link to={`/workflow/${workflow.id}?name=${workflow.name}`}>
+                  <Link to={`/workflows/modules/?name=${workflow.name}`}>
                     {workflow.name}
                   </Link>
                 </td>

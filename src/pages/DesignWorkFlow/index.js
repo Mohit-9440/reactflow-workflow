@@ -9,7 +9,6 @@ import ReactFlow, {
   Controls,
   
 } from 'reactflow';
-// import 'reactflow/dist/style.css';
 import Sidebar from '../../compoments/Sidebar';
 import './index.css';
 
@@ -21,13 +20,14 @@ const initialNodes = [
     type: 'input',
     data: { 
       label: 
-      <div className='dndnode_data'>
-        <div className='dndnode_input_type'><ArrowCircleRightOutlinedIcon /></div>
+      <div className='dndnode_data flow_node'>
+        <div className='dndnode_input_type'><ArrowCircleRightOutlinedIcon sx={{ width: '15px', height: '15px' }} /></div>
         <div className='dndnode_name'>Input</div>
         <div className='dndnode_output_type'>A</div>
-    </div>
+      </div>
       },
-    position: { x: 250, y: 5 },
+    style:{height: "auto"},
+    position: { x: 250, y: -50 },
   },
 ];
 
@@ -36,11 +36,31 @@ const getId = () => `dndnode_${id++}`;
 
 const DesignWorkFlow = () => {
   const reactFlowWrapper = useRef(null);
+  const [selectedNode, setSelectedNode] = useState()
+  const [selectedEdge, setSelectedEdge] = useState()
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const reactFlowRef = useRef(null);
   console.log({nodes, edges})
 
+
+  const handleKeyDown = (event) => {
+    if (event.keyCode === 46 || event.keyCode === 8) {
+      if (selectedNode.length > 0) {
+        setNodes((els) => els.filter((el) => el.id !== selectedNode[0].id))
+      } else if (selectedEdge.length > 0) {
+        // setEdges((els) => els.filter((el) => el.id !== selectedEdge[0].id)) 
+      }
+    }
+  };
+
+  
+  function handleSelectionChange(elements) {
+    console.log(elements)
+    setSelectedNode(elements?.nodes)
+    setSelectedEdge(elements?.edges)
+  }
   
   const onConnect = useCallback((params) => {
     console.log({onChange : params})
@@ -56,7 +76,7 @@ const DesignWorkFlow = () => {
           style: {
             border: '1px solid rgb(101, 188, 231)',
             borderRadius: '5px',
-            padding: '10px',
+            // padding: '10px',
           },
         };
   
@@ -79,7 +99,6 @@ const DesignWorkFlow = () => {
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const type = event.dataTransfer.getData('application/reactflow');
-      // console.log({name})
 
       // check if the dropped element is valid
       if (typeof type === 'undefined' || !type) {
@@ -97,7 +116,7 @@ const DesignWorkFlow = () => {
         type,
         position,
         data: { label: (
-          <div className='dndnode_data newNode_data'>
+          <div className='dndnode_data flow_node'>
             <div className='dndnode_input_type'>{node_input_type}</div>
             <div className='dndnode_name'>{nodeName}</div>
             <div className='dndnode_output_type'>{node_output_type}</div>
@@ -124,16 +143,22 @@ const DesignWorkFlow = () => {
     console.log(node)
     const hasSource = edges.some((edge) => edge.target === node.id);
     const updatedNode = { ...node };
-    updatedNode.style = { border: (hasSource || node?.type === 'input') ? '1px solid rgb(101, 188, 231)' : '1px solid red' };
+    updatedNode.style = { 
+      border: (hasSource || node?.type === 'input') ? '1px solid rgb(101, 188, 231)' : '1px solid red',
+      fontSize: '14px !important',
+      ".dndnode_input_type" : {borderColor: 'red'}
+     };
     setNodes((nodes) => nodes.map((n) => (n.id === updatedNode.id ? updatedNode : n)));
   };
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const workflowName = queryParams.get('name');
+
+  
   return (
     <div className="dndflow">
       <ReactFlowProvider>
-      <div className='header'>{workflowName}</div>
+      <div className='header'>Workflow Name : {workflowName}</div>
         <div
           style={{
             display: 'flex',
@@ -150,17 +175,20 @@ const DesignWorkFlow = () => {
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
+              onSelectionChange={handleSelectionChange}
               onInit={setReactFlowInstance}
               onDrop={onDrop}
               onDragOver={onDragOver}
               onNodeDragStop={onNodeDragStop}
               fitView
+              onKeyDown={handleKeyDown}
+              onLoad={(_reactFlowInstance) => (reactFlowRef.current = _reactFlowInstance)}
+              deleteKeyCode={46}
             >
               <Controls />
             </ReactFlow>
           </div>
         </div>
-        
       </ReactFlowProvider>
     </div>
   );
